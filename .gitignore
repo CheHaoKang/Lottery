@@ -1,0 +1,7 @@
+.idea/*
+__pycache__/*
+cred.txt
+cred.json
+ghostdriver.log
+output.txt
+pythonStockEvaluation - Shortcut.lnk
