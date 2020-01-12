@@ -4,19 +4,24 @@ class BingoBingo(Lottery):
     def __init__(self):
         self.firstname = 1
 
-    def number_statistics(self):
+    def number_statistics(self, date_period = 90, days_ago = 7):
         from collections import defaultdict
         import operator
-
-        number_occurrence = defaultdict(int)
+        
         def counter(numbers):
             for number in numbers.split():
                 number_occurrence[number] += 1 
 
-        for numbers in self.sql_action("SELECT numbers FROM BingoBingo"):
-            counter(numbers[0])
+        days_statistics = {}
+        for days_number in range(1, days_ago + 1):
+            number_occurrence = defaultdict(int)
+            
+            for numbers in self.sql_action("SELECT numbers FROM BingoBingo WHERE drawing_date BETWEEN DATE_SUB(NOW(), INTERVAL %s DAY) AND DATE_SUB(NOW(), INTERVAL %s DAY)", (date_period + days_number, days_number - 1)):
+                counter(numbers[0])
+                
+            days_statistics[days_number] = sorted(number_occurrence.items(), key=operator.itemgetter(1), reverse=True)
 
-        return sorted(number_occurrence.items(), key=operator.itemgetter(1), reverse=True)
+        return days_statistics
 
     def crawler(self):
         import sys
