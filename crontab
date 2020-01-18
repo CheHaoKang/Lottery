@@ -1,0 +1,1 @@
+27 22 * * * PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin;cd /Users/decken/Dropbox/Lottery && rm error.txt && rm output.txt && /Users/decken/anaconda3/bin/python3.7 lottery_instance.py > error.txt 2>&1

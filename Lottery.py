@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 class Lottery:
     def __init__(self):
         self.firstname = 111
