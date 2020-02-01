@@ -6,6 +6,8 @@ from Lottery import Lottery
 class BingoBingo(Lottery):
     def __init__(self):
         self.retry_max = 5
+        self.drawing_one_day = 203
+        self.previous_days = 90
 
     def number_statistics(self, date_period=90, days_ago=7):
         from collections import defaultdict
@@ -26,6 +28,15 @@ class BingoBingo(Lottery):
 
         return days_statistics
 
+    def get_drawing_dates(self):
+        crawled_dates = {}
+        for d in self.sql_action("SELECT drawing_date, IF(COUNT(1) != %s, 0, 1) qualified FROM BingoBingo GROUP BY drawing_date ORDER BY drawing_date DESC LIMIT %s", (self.drawing_one_day, self.previous_days)):
+            drawing_date = str(d[0])
+            crawled_dates[drawing_date] = d[1]
+            if not d[1]: self.sql_action("DELETE FROM BingoBingo WHERE drawing_date = %s", (drawing_date)) 
+        
+        return crawled_dates
+
     def crawler(self):
         import sys
         import datetime
@@ -33,18 +44,20 @@ class BingoBingo(Lottery):
         from selenium import webdriver
         from selenium.webdriver.support.select import Select
 
+        config = self.load_config('folder')
+
         if int(datetime.datetime.today().strftime("%H")) < 1:
             print('Please wait till 1:00 AM for data synced.')
             return 0
         
-        crawled_dates = { str(d[0]): 1 for d in self.sql_action("SELECT DISTINCT(drawing_date) FROM BingoBingo") }
-
-        os_path = 'D:\\BP\\Dropbox\\Lottery\\output.txt' if sys.platform == 'win32' or sys.platform == 'cygwin' else '/Users/decken/Dropbox/Lottery/output.txt'
+        os_path = config['windows'] if sys.platform == 'win32' or sys.platform == 'cygwin' else config['mac']
         sys.stdout = open(os_path, mode="w", encoding="utf8")
 
         retry = 0
         while retry < self.retry_max:
             try:
+                crawled_dates = self.get_drawing_dates()
+
                 driver = webdriver.Chrome()
                 driver.implicitly_wait(10)
                 driver.get('https://www.taiwanlottery.com.tw/Lotto/BINGOBINGO/drawing.aspx')

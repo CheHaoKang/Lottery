@@ -112,6 +112,8 @@ class Lottery:
                 elif action == 'select':
                     cur.execute(sql, bind_values)
                     results = cur.fetchall()
+                elif action == 'delete':
+                    cur.execute(sql, bind_values)
 
                 cur.close()
                 conn.commit()
@@ -120,8 +122,8 @@ class Lottery:
             except:
                 import traceback
                 traceback.print_exc()
-                cur.close()
-                conn.close()
+                if 'cur' in locals(): cur.close()
+                if 'conn' in locals(): conn.close()
 
                 trial_max -= 1
         
